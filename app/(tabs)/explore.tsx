@@ -15,7 +15,7 @@ const RESOURCES = [
     category: "🏛️ On-Campus Housing",
     items: [
       { label: "LSU Residential Life", url: "https://www.lsu.edu/reslife/", desc: "Official LSU dorms & on-campus housing" },
-      { label: "LSU Housing Portal", url: "https://lsuhousing.edu/", desc: "Apply for on-campus housing" },
+      { label: "LSU Housing Portal", url: "https://lsu.starrezhousing.com/StarRezPortalX/Login", desc: "Apply for on-campus housing" },
       { label: "LSU Off-Campus Housing", url: "https://offcampushousing.lsu.edu/", desc: "LSU's official off-campus listings" },
     ],
   },
