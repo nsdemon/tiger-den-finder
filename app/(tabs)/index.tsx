@@ -6,6 +6,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useListings } from "@/context/ListingsContext";
+import { useSearch } from "@/context/SearchContext";
 import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -25,7 +26,7 @@ function generatePriceHistory(currentPrice: number) {
 }
 
 export default function TigerDenFinder() {
-  const [search, setSearch] = useState("");
+  const { searchQuery: search } = useSearch();
   const [typeFilter, setTypeFilter] = useState("All");
   const [selected, setSelected] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("Overview");
@@ -67,6 +68,7 @@ export default function TigerDenFinder() {
   const [sortBy, setSortBy] = useState("default");
   const [showTesterMenu, setShowTesterMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [showHeaderMenu, setShowHeaderMenu] = useState(false);
 
   const filtered = listings.filter((l) => {
     const q = search.toLowerCase();
@@ -81,6 +83,7 @@ export default function TigerDenFinder() {
   }).sort((a, b) => {
     if (sortBy === "price_asc") return a.price - b.price;
     if (sortBy === "price_desc") return b.price - a.price;
+    if (sortBy === "type") return (a.type || "").localeCompare(b.type || "");
     if (sortBy === "distance") return parseFloat(a.distance) - parseFloat(b.distance);
     if (sortBy === "rating") return b.rating - a.rating;
     return 0;
@@ -118,49 +121,53 @@ export default function TigerDenFinder() {
           </View>
         </View>
         <View style={s.headerRight}>
-          <View style={s.proBadge}><Text style={s.proBadgeText}>🐯 FREE</Text></View>
-          {/* 🔔 ALERTS BUTTON */}
-          <TouchableOpacity style={[s.alertBtn, alerts.length > 0 && s.alertBtnActive]} onPress={() => setShowAlerts(true)}>
-            <Text style={s.alertBtnEmoji}>🔔</Text>
-            {alerts.length > 0 && <View style={s.alertDot}><Text style={s.alertDotText}>{alerts.length}</Text></View>}
-          </TouchableOpacity>
-          {/* 🐾 TIGER PAW FILTER BUTTON */}
           <TouchableOpacity
-            style={[s.pawBtn, typeFilter !== "All" && s.pawBtnActive]}
-            onPress={() => setShowFilterMenu(true)}
+            style={s.menuBtn}
+            onPress={() => setShowHeaderMenu(true)}
           >
-            <Text style={s.pawEmoji}>🐾</Text>
-            {typeFilter !== "All" && <View style={s.pawDot} />}
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.wishlistBtn, wishlist.length > 0 && s.wishlistBtnActive]} onPress={() => setShowWishlist(true)}>
-            <Text style={[s.wishlistBtnText, wishlist.length > 0 && s.wishlistBtnTextActive]}>
-              ♥{wishlist.length > 0 ? ` ${wishlist.length}` : ""}
-            </Text>
+            <Text style={s.menuBtnText}>⋯</Text>
+            {(alerts.length > 0 || wishlist.length > 0 || typeFilter !== "All" || sortBy !== "default") && (
+              <View style={s.menuDot} />
+            )}
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* SEARCH BAR */}
-      <View style={s.searchWrap}>
-        <Text style={s.searchIcon}>🔍</Text>
-        <TextInput
-          style={s.searchInput}
-          placeholder="Search by name, address, type..."
-          placeholderTextColor="#8070A0"
-          value={search}
-          onChangeText={setSearch}
-        />
-      </View>
-
-      {/* SORT BAR */}
-      <View style={s.sortBar}>
-        <Text style={s.sortLabel}>Sort:</Text>
-        {[["default","Default"],["price_asc","💰 Low→High"],["price_desc","💰 High→Low"],["distance","📍 Distance"],["rating","⭐ Rating"]].map(([val, label]) => (
-          <TouchableOpacity key={val} style={[s.sortChip, sortBy === val && s.sortChipActive]} onPress={() => setSortBy(val)}>
-            <Text style={[s.sortChipText, sortBy === val && s.sortChipTextActive]}>{label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* HEADER MENU (Alerts, Filter, Favorites) */}
+      <Modal visible={showHeaderMenu} transparent animationType="fade" onRequestClose={() => setShowHeaderMenu(false)}>
+        <TouchableOpacity style={s.pawOverlay} activeOpacity={1} onPress={() => setShowHeaderMenu(false)}>
+          <View style={s.headerMenuBox}>
+            <Text style={s.headerMenuTitle}>Listings</Text>
+            <TouchableOpacity
+              style={s.headerMenuItem}
+              onPress={() => { setShowHeaderMenu(false); setShowFilterMenu(true); }}
+            >
+              <Text style={s.headerMenuEmoji}>🐾</Text>
+              <Text style={s.headerMenuLabel}>Filter & Sort</Text>
+              {(typeFilter !== "All" || sortBy !== "default") && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>1</Text></View>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.headerMenuItem}
+              onPress={() => { setShowHeaderMenu(false); setShowAlerts(true); }}
+            >
+              <Text style={s.headerMenuEmoji}>🔔</Text>
+              <Text style={s.headerMenuLabel}>Listing Alerts</Text>
+              {alerts.length > 0 && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>{alerts.length}</Text></View>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.headerMenuItem}
+              onPress={() => { setShowHeaderMenu(false); setShowWishlist(true); }}
+            >
+              <Text style={s.headerMenuEmoji}>♥</Text>
+              <Text style={s.headerMenuLabel}>Favorites</Text>
+              {wishlist.length > 0 && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>{wishlist.length}</Text></View>}
+            </TouchableOpacity>
+            <TouchableOpacity style={s.headerMenuClose} onPress={() => setShowHeaderMenu(false)}>
+              <Text style={s.headerMenuCloseText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* LIVE DATA BANNER */}
       {usingLiveData && (
@@ -628,17 +635,18 @@ export default function TigerDenFinder() {
         </SafeAreaView>
       </Modal>
 
-      {/* ── 🐾 TIGER PAW FILTER MODAL ── */}
+      {/* ── 🐾 FILTER & SORT MODAL ── */}
       <Modal visible={showFilterMenu} transparent animationType="fade" onRequestClose={() => setShowFilterMenu(false)}>
         <TouchableOpacity style={s.pawOverlay} activeOpacity={1} onPress={() => setShowFilterMenu(false)}>
           <View style={s.pawDropdown}>
             <View style={s.pawDropdownHeader}>
               <Text style={s.pawDropdownEmoji}>🐾</Text>
-              <Text style={s.pawDropdownTitle}>Filter by Type</Text>
+              <Text style={s.pawDropdownTitle}>Filter & Sort</Text>
               <TouchableOpacity onPress={() => setShowFilterMenu(false)}>
                 <Text style={s.pawDropdownClose}>✕</Text>
               </TouchableOpacity>
             </View>
+            <Text style={s.pawSectionLabel}>Filter by type</Text>
             {TYPE_FILTERS.map((t) => (
               <TouchableOpacity
                 key={t}
@@ -655,9 +663,25 @@ export default function TigerDenFinder() {
                 {typeFilter === t && <Text style={s.pawCheckmark}>✓</Text>}
               </TouchableOpacity>
             ))}
-            {typeFilter !== "All" && (
-              <TouchableOpacity style={s.pawClearBtn} onPress={() => { setTypeFilter("All"); setShowFilterMenu(false); }}>
-                <Text style={s.pawClearText}>Clear Filter</Text>
+            <Text style={s.pawSectionLabel}>Sort by</Text>
+            {[
+              ["default", "Default"],
+              ["price_asc", "💰 Price: Low → High"],
+              ["price_desc", "💰 Price: High → Low"],
+              ["type", "🏠 Type (A–Z)"],
+            ].map(([val, label]) => (
+              <TouchableOpacity
+                key={val}
+                style={[s.pawOption, sortBy === val && s.pawOptionActive]}
+                onPress={() => { setSortBy(val); setShowFilterMenu(false); }}
+              >
+                <Text style={[s.pawOptionText, sortBy === val && s.pawOptionTextActive]}>{label}</Text>
+                {sortBy === val && <Text style={s.pawCheckmark}>✓</Text>}
+              </TouchableOpacity>
+            ))}
+            {(typeFilter !== "All" || sortBy !== "default") && (
+              <TouchableOpacity style={s.pawClearBtn} onPress={() => { setTypeFilter("All"); setSortBy("default"); setShowFilterMenu(false); }}>
+                <Text style={s.pawClearText}>Clear filter & sort</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -706,6 +730,17 @@ const s = StyleSheet.create({
   logoTitle: { fontSize: 22, fontWeight: "900", color: GOLD, includeFontPadding: false },
   logoSub: { fontSize: 10, letterSpacing: 4, color: GOLD_DIM, includeFontPadding: false, marginTop: 1 },
   headerRight: { flexDirection: "row", gap: 10, alignItems: "center", flexShrink: 0 },
+  menuBtn: {
+    width: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 40,
+    height: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.1)",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  menuBtnText: { color: GOLD, fontSize: 24, fontWeight: "700", lineHeight: 28 },
+  menuDot: { position: "absolute", top: 6, right: 6, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD },
   upgradeBtn: { backgroundColor: GOLD, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8 },
   upgradeBtnText: { color: "#1A0533", fontWeight: "800", fontSize: 13 },
   proBadge: { backgroundColor: GOLD, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 6 },
@@ -961,6 +996,16 @@ const s = StyleSheet.create({
   pawDropdownEmoji: { fontSize: 18 },
   pawDropdownTitle: { flex: 1, color: GOLD, fontWeight: "800", fontSize: 14 },
   pawDropdownClose: { color: MUTED, fontSize: 16, padding: 2 },
+  pawSectionLabel: { color: GOLD, fontSize: 11, fontWeight: "800", marginTop: 12, marginBottom: 6, paddingHorizontal: 16, letterSpacing: 1 },
+  headerMenuBox: { backgroundColor: "#1A0F2E", borderRadius: 20, width: "86%", maxWidth: 320, alignSelf: "center", marginTop: 100, borderWidth: 1, borderColor: "rgba(253,216,53,0.3)", overflow: "hidden" },
+  headerMenuTitle: { color: MUTED, fontSize: 11, fontWeight: "800", letterSpacing: 1, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 },
+  headerMenuItem: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.06)" },
+  headerMenuEmoji: { fontSize: 20, marginRight: 12 },
+  headerMenuLabel: { flex: 1, color: TEXT, fontSize: 16, fontWeight: "600" },
+  headerMenuBadge: { backgroundColor: GOLD, borderRadius: 10, minWidth: 20, height: 20, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
+  headerMenuBadgeText: { color: PURPLE_DARK, fontSize: 12, fontWeight: "800" },
+  headerMenuClose: { padding: 16, alignItems: "center" },
+  headerMenuCloseText: { color: MUTED, fontSize: 15 },
   pawOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.05)" },
   pawOptionActive: { backgroundColor: "rgba(253,216,53,0.08)" },
   pawOptionText: { color: TEXT, fontSize: 14, fontWeight: "500" },

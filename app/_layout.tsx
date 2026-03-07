@@ -8,6 +8,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '@/context/AuthContext';
+import { SearchProvider } from '@/context/SearchContext';
 import { CookieConsent } from '@/components/CookieConsent';
 import { trackVisitStart, trackVisitEnd, hasAnalyticsConsent } from '@/lib/analytics';
 
@@ -74,15 +75,17 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
+      <SearchProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)/login" options={{ headerShown: false, presentation: 'modal' }} />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
-        <CookieConsent />
-      </ThemeProvider>
+          </Stack>
+          <StatusBar style="auto" />
+          <CookieConsent />
+        </ThemeProvider>
+      </SearchProvider>
     </AuthProvider>
   );
 }
