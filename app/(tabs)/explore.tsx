@@ -31,9 +31,9 @@ const RESOURCES = [
   {
     category: "🚌 Transportation",
     items: [
-      { label: "LSU Tiger Trails Bus", url: "https://www.lsu.edu/parking/bus/index.php", desc: "Free bus routes around campus & Baton Rouge" },
+      { label: "LSU Tiger Trails Bus", url: "https://lapop.lsu.edu/parking/transportation/tiger-trails.php", desc: "Free bus routes around campus & Baton Rouge" },
       { label: "CATS Bus System", url: "https://www.brcats.com/", desc: "Baton Rouge city buses" },
-      { label: "LSU Campus Map", url: "https://www.lsu.edu/map/", desc: "Interactive campus map" },
+      { label: "LSU Campus Map", url: "https://map.lsu.edu/", desc: "Interactive campus map" },
     ],
   },
   {
@@ -48,7 +48,7 @@ const RESOURCES = [
     category: "🎓 Student Life",
     items: [
       { label: "LSU Student Organizations", url: "https://www.lsu.edu/campuslife/", desc: "Clubs, orgs & campus events" },
-      { label: "LSU Dining", url: "https://lsudining.com/", desc: "Meal plans & dining locations on campus" },
+      { label: "LSU Dining", url: "https://dineoncampus.com/lsu", desc: "Meal plans & dining locations on campus" },
       { label: "Reddit r/LSU", url: "https://www.reddit.com/r/LSU/", desc: "Student forum for housing tips & advice" },
     ],
   },

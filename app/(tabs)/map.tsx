@@ -82,7 +82,7 @@ export default function MapScreen() {
       {/* HEADER */}
       <View style={s.header}>
         <View>
-          <Text style={s.headerTitle}>Map View</Text>
+          <Text style={s.headerTitle}>🗺️ Map View</Text>
           <Text style={s.headerSub}>{loading ? "Loading..." : `${filtered.length} listings near LSU`}</Text>
         </View>
         {/* FILTER BUTTON */}

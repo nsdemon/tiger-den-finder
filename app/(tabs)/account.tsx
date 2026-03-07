@@ -24,7 +24,7 @@ export default function AccountScreen() {
   return (
     <SafeAreaView style={s.root} edges={["top", "left", "right"]}>
       <View style={s.header}>
-        <Text style={s.headerTitle}>Account</Text>
+        <Text style={s.headerTitle}>👤 Account</Text>
         <Text style={s.headerSub}>Tiger Den Finder</Text>
       </View>
 
