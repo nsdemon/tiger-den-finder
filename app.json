@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sudopc.TigerDenFinder"
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +24,9 @@
     },
     "web": {
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon.png",
+      "backgroundColor": "#0D0A14",
+      "themeColor": "#2D0B6B"
     },
     "plugins": [
       "expo-router",

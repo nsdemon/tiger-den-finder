@@ -22,6 +22,10 @@ export default function MapScreen() {
     [listings, activeFilter]
   );
 
+  // LSU campus center (geographic center of main campus)
+  const LSU_CENTER_LAT = 30.4145;
+  const LSU_CENTER_LNG = -91.1783;
+
   const leafletHTML = useMemo(() => {
     const markers = filtered.map(l => ({
       lat: l.lat, lng: l.lng, name: l.name, price: l.price,
@@ -38,8 +42,8 @@ export default function MapScreen() {
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <style>
     * { margin:0; padding:0; box-sizing:border-box; }
-    html, body, #map { width:100%; height:100%; background:#0D0A14; }
-    .marker-pin { background:#2D0B6B; border:2px solid #FDD835; border-radius:12px; padding:3px 7px; color:#FDD835; font-weight:900; font-size:11px; font-family:sans-serif; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.5); cursor:pointer; }
+    html, body, #map { width:100%; height:100%; background:#e8e6e1; }
+    .marker-pin { background:#2D0B6B; border:2px solid #FDD835; border-radius:12px; padding:3px 7px; color:#FDD835; font-weight:900; font-size:11px; font-family:sans-serif; white-space:nowrap; box-shadow:0 2px 8px rgba(0,0,0,0.3); cursor:pointer; }
     .marker-pin.unavailable { background:#374151; border-color:#6B7280; color:#9CA3AF; }
     .leaflet-popup-content-wrapper { background:#1A0F2E; border:1px solid rgba(253,216,53,0.3); border-radius:12px; color:#F5F0E8; }
     .leaflet-popup-tip { background:#1A0F2E; }
@@ -56,8 +60,8 @@ export default function MapScreen() {
 <body>
 <div id="map"></div>
 <script>
-  var map = L.map('map', { zoomControl:true }).setView([30.4133, -91.1800], 13);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
+  var map = L.map('map', { zoomControl:true }).setView([${LSU_CENTER_LAT}, ${LSU_CENTER_LNG}], 14);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', { maxZoom:19 }).addTo(map);
   var markers = ${JSON.stringify(markers)};
   markers.forEach(function(m) {
     var icon = L.divIcon({

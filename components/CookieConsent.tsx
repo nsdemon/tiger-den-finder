@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from "react-native";
 import { trackVisitStart } from "@/lib/analytics";
+import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const CONSENT_KEY = "tigerden_cookie_consent";
 const GOLD = "#FDD835";
@@ -94,6 +95,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 1,
     borderColor: MUTED,
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
   },
   declineText: { color: MUTED, fontSize: 14, fontWeight: "600" },
   acceptBtn: {
@@ -101,6 +104,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 10,
     backgroundColor: GOLD,
+    minHeight: MIN_TOUCH_TARGET,
+    justifyContent: "center",
   },
   acceptText: { color: PURPLE_DARK, fontSize: 14, fontWeight: "800" },
 });

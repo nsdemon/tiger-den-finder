@@ -2,9 +2,10 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
 
+import { Platform } from 'react-native';
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
+import { Colors, MIN_TOUCH_TARGET } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function TabLayout() {
@@ -17,8 +18,13 @@ export default function TabLayout() {
         tabBarInactiveTintColor: Colors[colorScheme ?? 'light'].tabIconDefault,
         headerShown: false,
         tabBarButton: HapticTab,
-        tabBarStyle: { minHeight: 58, paddingTop: 6, paddingBottom: 8 },
+        tabBarStyle: {
+          minHeight: Platform.OS === 'ios' || Platform.OS === 'web' ? 64 : 58,
+          paddingTop: 6,
+          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+        },
         tabBarLabelStyle: { fontSize: 10, marginTop: 2 },
+        tabBarItemStyle: { minHeight: MIN_TOUCH_TARGET },
       }}>
       <Tabs.Screen
         name="index"

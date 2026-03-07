@@ -5,6 +5,9 @@
 
 import { Platform } from 'react-native';
 
+/** iOS HIG minimum touch target (44pt). Use for tap areas on iPhone. */
+export const MIN_TOUCH_TARGET = 44;
+
 const tintColorLight = '#FDD835'; // bright LSU gold
 const tintColorDark = '#FDD835';
 

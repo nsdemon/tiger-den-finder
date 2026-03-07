@@ -6,6 +6,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useListings } from "@/context/ListingsContext";
+import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const TYPE_FILTERS = ["All", "Apartment", "Condo", "Single Family", "Townhouse"];
@@ -709,7 +710,7 @@ const s = StyleSheet.create({
   upgradeBtnText: { color: "#1A0533", fontWeight: "800", fontSize: 13 },
   proBadge: { backgroundColor: GOLD, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 6 },
   proBadgeText: { color: "#1A0533", fontWeight: "800", fontSize: 12 },
-  wishlistBtn: { borderWidth: 1.5, borderColor: GOLD, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8 },
+  wishlistBtn: { borderWidth: 1.5, borderColor: GOLD, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 8, minHeight: MIN_TOUCH_TARGET, justifyContent: "center" },
   wishlistBtnActive: { backgroundColor: GOLD },
   wishlistBtnText: { color: GOLD, fontWeight: "700", fontSize: 14 },
   wishlistBtnTextActive: { color: "#1A0533" },
@@ -717,7 +718,7 @@ const s = StyleSheet.create({
   // SEARCH
   searchWrap: { flexDirection: "row", alignItems: "center", backgroundColor: PURPLE_MED, margin: 12, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(253,216,53,0.3)" },
   searchIcon: { fontSize: 16, marginRight: 8 },
-  searchInput: { flex: 1, color: TEXT, paddingVertical: 12, fontSize: 14 },
+  searchInput: { flex: 1, color: TEXT, paddingVertical: 12, fontSize: Platform.OS === "web" ? 16 : 14 },
 
   // FILTERS
   filterRow: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
@@ -746,7 +747,7 @@ const s = StyleSheet.create({
   waitlistText: { color: "#FF6B6B", fontSize: 10, fontWeight: "700" },
   verifiedBadge: { backgroundColor: "#3B82F6", borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
   verifiedText: { color: "#fff", fontSize: 10, fontWeight: "700" },
-  heartBtn: { position: "absolute", top: 10, right: 10, backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 20, width: 34, height: 34, alignItems: "center", justifyContent: "center" },
+  heartBtn: { position: "absolute", top: 10, right: 10, backgroundColor: "rgba(0,0,0,0.5)", borderRadius: 22, width: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 34, height: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 34, alignItems: "center", justifyContent: "center" },
   heartIcon: { fontSize: 18, color: "#ccc" },
   heartIconActive: { color: GOLD },
   cardNameWrap: { position: "absolute", bottom: 10, left: 12, right: 12, flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between" },
@@ -930,7 +931,7 @@ const s = StyleSheet.create({
   // SORT BAR
   sortBar: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 14, paddingVertical: 8, gap: 6, alignItems: "center" },
   sortLabel: { color: MUTED, fontSize: 12, fontWeight: "600", marginRight: 4 },
-  sortChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14, backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.15)" },
+  sortChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14, minHeight: MIN_TOUCH_TARGET, justifyContent: "center", backgroundColor: "rgba(255,255,255,0.07)", borderWidth: 1, borderColor: "rgba(255,255,255,0.15)" },
   sortChipActive: { backgroundColor: GOLD, borderColor: GOLD },
   sortChipText: { color: MUTED, fontSize: 11, fontWeight: "600" },
   sortChipTextActive: { color: "#1A0533", fontWeight: "800" },
@@ -948,7 +949,7 @@ const s = StyleSheet.create({
   testerBannerText: { color: "#4ADE80", fontSize: 11, textAlign: "center", fontWeight: "600" },
 
   // TIGER PAW FILTER BUTTON
-  pawBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1.5, borderColor: "rgba(253,216,53,0.4)", alignItems: "center", justifyContent: "center", position: "relative" },
+  pawBtn: { width: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 38, height: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 38, borderRadius: Platform.OS === "ios" || Platform.OS === "web" ? 22 : 19, backgroundColor: "rgba(255,255,255,0.08)", borderWidth: 1.5, borderColor: "rgba(253,216,53,0.4)", alignItems: "center", justifyContent: "center", position: "relative" },
   pawBtnActive: { backgroundColor: "rgba(253,216,53,0.15)", borderColor: GOLD },
   pawEmoji: { fontSize: 18 },
   pawDot: { position: "absolute", top: 2, right: 2, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD, borderWidth: 1.5, borderColor: PURPLE_LIGHT },
@@ -974,7 +975,7 @@ const s = StyleSheet.create({
   testerOptBtnText: { color: TEXT, fontSize: 13, fontWeight: "600" },
 
   // ALERTS BUTTON
-  alertBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", position: "relative" },
+  alertBtn: { width: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 36, height: Platform.OS === "ios" || Platform.OS === "web" ? MIN_TOUCH_TARGET : 36, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.08)", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: "rgba(255,255,255,0.12)", position: "relative" },
   alertBtnActive: { backgroundColor: "rgba(253,216,53,0.15)", borderColor: GOLD },
   alertBtnEmoji: { fontSize: 16 },
   alertDot: { position: "absolute", top: -4, right: -4, backgroundColor: GOLD, borderRadius: 8, minWidth: 16, height: 16, alignItems: "center", justifyContent: "center" },
