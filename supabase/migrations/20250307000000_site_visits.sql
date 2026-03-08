@@ -20,12 +20,14 @@ create table if not exists public.site_visits (
 -- Allow anonymous inserts (from your web app); restrict reads to service role / auth users only
 alter table public.site_visits enable row level security;
 
+drop policy if exists "Allow anonymous insert for site visits" on public.site_visits;
 create policy "Allow anonymous insert for site visits"
   on public.site_visits for insert
   to anon
   with check (true);
 
 -- Only authenticated users (or service role) can read analytics. Anon cannot update rows directly.
+drop policy if exists "Allow read for authenticated users only" on public.site_visits;
 create policy "Allow read for authenticated users only"
   on public.site_visits for select
   to authenticated

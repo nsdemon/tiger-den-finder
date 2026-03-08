@@ -10,6 +10,11 @@ import { useSearch } from "@/context/SearchContext";
 import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+function getListingPhotos(item: { photo?: string; photos?: string[] }): string[] {
+  if (item.photos && Array.isArray(item.photos) && item.photos.length > 0) return item.photos;
+  return item.photo ? [item.photo] : [];
+}
 const TYPE_FILTERS = ["All", "Apartment", "Condo", "Single Family", "Townhouse"];
 const TABS = ["Overview", "Price History", "Amenities", "Food", "Reviews", "Message", "Contact"];
 const PRO_TABS: string[] = []; // Everything free for now
@@ -69,6 +74,7 @@ export default function TigerDenFinder() {
   const [showTesterMenu, setShowTesterMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showHeaderMenu, setShowHeaderMenu] = useState(false);
+  const [modalPhotoIndex, setModalPhotoIndex] = useState(0);
 
   const filtered = listings.filter((l) => {
     const q = search.toLowerCase();
@@ -207,7 +213,7 @@ export default function TigerDenFinder() {
             </View>
           }
           renderItem={({ item }) => (
-            <TouchableOpacity style={[s.card, Platform.OS === "web" && s.cardWeb]} activeOpacity={0.9} onPress={() => { setSelected(item); setActiveTab("Overview"); setMessageSent(false); }}>
+            <TouchableOpacity style={[s.card, Platform.OS === "web" && s.cardWeb]} activeOpacity={0.9} onPress={() => { setSelected(item); setActiveTab("Overview"); setMessageSent(false); setModalPhotoIndex(0); }}>
             {/* Photo */}
             <View style={s.cardPhotoWrap}>
               <Image
@@ -271,10 +277,41 @@ export default function TigerDenFinder() {
         <SafeAreaView style={s.root}>
           {selected && (
             <>
-              {/* Hero Photo */}
+              {/* Hero Photo(s) */}
               <View style={s.modalHero}>
-                <Image source={{ uri: selected.photo }} style={s.modalHeroImg} resizeMode="cover" />
+                {(() => {
+                  const uris = getListingPhotos(selected);
+                  if (uris.length <= 1) {
+                    return (
+                      <Image source={{ uri: uris[0] || selected.photo }} style={s.modalHeroImg} resizeMode="cover" />
+                    );
+                  }
+                  return (
+                    <ScrollView
+                      horizontal
+                      pagingEnabled
+                      showsHorizontalScrollIndicator={false}
+                      onMomentumScrollEnd={(e) => {
+                        const i = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                        setModalPhotoIndex(i);
+                      }}
+                      style={s.modalHeroImg}
+                      contentContainerStyle={{ width: uris.length * SCREEN_WIDTH }}
+                    >
+                      {uris.map((uri, i) => (
+                        <Image key={i} source={{ uri }} style={[s.modalHeroImg, { width: SCREEN_WIDTH }]} resizeMode="cover" />
+                      ))}
+                    </ScrollView>
+                  );
+                })()}
                 <View style={s.modalHeroOverlay} />
+                {getListingPhotos(selected).length > 1 && (
+                  <View style={s.modalPhotoDots}>
+                    {getListingPhotos(selected).map((_, i) => (
+                      <View key={i} style={[s.modalPhotoDot, i === modalPhotoIndex && s.modalPhotoDotActive]} />
+                    ))}
+                  </View>
+                )}
                 <TouchableOpacity style={s.modalCloseBtn} onPress={() => setSelected(null)}>
                   <Text style={s.modalCloseTxt}>✕</Text>
                 </TouchableOpacity>
@@ -619,7 +656,7 @@ export default function TigerDenFinder() {
               keyExtractor={(item) => item.id.toString()}
               contentContainerStyle={{ padding: 16 }}
               renderItem={({ item }) => (
-                <TouchableOpacity style={s.wishCard} onPress={() => { setSelected(item); setShowWishlist(false); setActiveTab("Overview"); }}>
+                <TouchableOpacity style={s.wishCard} onPress={() => { setSelected(item); setShowWishlist(false); setActiveTab("Overview"); setModalPhotoIndex(0); }}>
                   <Image source={{ uri: item.photo }} style={s.wishCardPhoto} resizeMode="cover" />
                   <View style={{ flex: 1 }}>
                     <Text style={s.wishCardName}>{item.name}</Text>
@@ -825,6 +862,9 @@ const s = StyleSheet.create({
   modalHeroPriceSub: { fontSize: 11, color: "rgba(255,255,255,0.5)" },
   modalHeroStats: { flexDirection: "row", gap: 14 },
   modalHeroStat: { fontSize: 12, color: "rgba(255,255,255,0.75)" },
+  modalPhotoDots: { position: "absolute", top: 16, left: 0, right: 0, flexDirection: "row", justifyContent: "center", gap: 6 },
+  modalPhotoDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.4)" },
+  modalPhotoDotActive: { backgroundColor: GOLD, width: 8, height: 8, borderRadius: 4 },
 
   // TABS
   tabScroll: { backgroundColor: PURPLE_MED, borderBottomWidth: 1, borderBottomColor: "rgba(253,216,53,0.15)", maxHeight: 48 },

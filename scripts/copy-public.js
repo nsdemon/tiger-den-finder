@@ -13,12 +13,18 @@ if (!fs.existsSync(publicDir)) {
   process.exit(0);
 }
 
-const files = fs.readdirSync(publicDir);
-files.forEach((f) => {
-  const src = path.join(publicDir, f);
-  const dest = path.join(dist, f);
-  if (fs.statSync(src).isFile()) {
-    fs.copyFileSync(src, dest);
-    console.log("Copied public/" + f + " -> dist/");
+function copyRecursive(srcDir, destDir) {
+  if (!fs.existsSync(destDir)) fs.mkdirSync(destDir, { recursive: true });
+  const entries = fs.readdirSync(srcDir, { withFileTypes: true });
+  for (const e of entries) {
+    const src = path.join(srcDir, e.name);
+    const dest = path.join(destDir, e.name);
+    if (e.isFile()) {
+      fs.copyFileSync(src, dest);
+      console.log("Copied " + path.relative(root, src) + " -> dist/");
+    } else if (e.isDirectory()) {
+      copyRecursive(src, dest);
+    }
   }
-});
+}
+copyRecursive(publicDir, dist);

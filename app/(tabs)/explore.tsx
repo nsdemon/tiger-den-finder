@@ -116,8 +116,8 @@ export default function ExploreScreen() {
         {/* CONTACT */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>📬 Contact Tiger Den</Text>
-          <TouchableOpacity style={s.contactBtn} onPress={() => Linking.openURL("mailto:support@tigerdenfinderapp.com")}>
-            <Text style={s.contactBtnText}>✉️  support@tigerdenfinderapp.com</Text>
+          <TouchableOpacity style={s.contactBtn} onPress={() => Linking.openURL("mailto:sudopc@gmail.com")}>
+            <Text style={s.contactBtnText}>✉️  sudopc@gmail.com</Text>
           </TouchableOpacity>
           <Text style={s.versionText}>Tiger Den Finder v1.0 • Built for LSU 🐯</Text>
         </View>

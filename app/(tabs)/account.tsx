@@ -2,6 +2,8 @@
 import { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Linking, TextInput, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
+import { useAuth } from "@/context/AuthContext";
 
 const GOLD = "#FDD835";
 const PURPLE_DARK = "#0D0A14";
@@ -10,6 +12,7 @@ const TEXT = "#F5F0E8";
 const MUTED = "#8070A0";
 
 export default function AccountScreen() {
+  const { session } = useAuth();
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackText, setFeedbackText] = useState("");
   const [feedbackSent, setFeedbackSent] = useState(false);
@@ -40,14 +43,48 @@ export default function AccountScreen() {
           </View>
         </View>
 
+        {/* AVAILABLE NOW */}
+        <View style={s.section}>
+          <Text style={s.sectionTitle}>✓ Available Now</Text>
+          <TouchableOpacity style={s.featureRow} onPress={() => router.push("/(auth)/login")}>
+            <Text style={s.featureEmoji}>👤</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.featureTitle}>Student Accounts</Text>
+              <Text style={s.featureDesc}>
+                {session ? "You're signed in." : "Sign in to save your preferences across devices."}
+              </Text>
+            </View>
+            <View style={[s.badge, session && s.badgeSuccess]}>
+              <Text style={[s.badgeText, session && s.badgeTextSuccess]}>{session ? "Signed in" : "Sign in"}</Text>
+            </View>
+          </TouchableOpacity>
+          <View style={s.featureRow}>
+            <Text style={s.featureEmoji}>🔔</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.featureTitle}>Listing Alerts</Text>
+              <Text style={s.featureDesc}>Tap ⋯ on Home to set max price, beds & type. We'll remember your criteria.</Text>
+            </View>
+            <View style={s.badge}>
+              <Text style={s.badgeText}>In app</Text>
+            </View>
+          </View>
+          <View style={s.featureRow}>
+            <Text style={s.featureEmoji}>💬</Text>
+            <View style={{ flex: 1 }}>
+              <Text style={s.featureTitle}>Message Landlords</Text>
+              <Text style={s.featureDesc}>Open any listing, then tap the Message tab to send a note.</Text>
+            </View>
+            <View style={s.badge}>
+              <Text style={s.badgeText}>In app</Text>
+            </View>
+          </View>
+        </View>
+
         {/* COMING SOON */}
         <View style={s.section}>
           <Text style={s.sectionTitle}>🚀 Coming Soon</Text>
           {[
-            ["👤", "Student Accounts", "Save your search, wishlist synced across devices"],
             ["⭐", "Verified Reviews", "Rate & review properties you've lived in"],
-            ["💬", "Message Landlords", "Contact property managers directly in-app"],
-            ["🔔", "Real-Time Alerts", "Push notifications for new listings"],
             ["🏠", "Landlord Listings", "List your property and reach LSU students"],
           ].map(([emoji, title, desc]) => (
             <View key={title} style={s.featureRow}>
@@ -76,7 +113,7 @@ export default function AccountScreen() {
         <View style={s.section}>
           <Text style={s.sectionTitle}>📬 About & Contact</Text>
           {[
-            { label: "Email Us", value: "support@tigerdenfinderapp.com", action: () => Linking.openURL("mailto:support@tigerdenfinderapp.com") },
+            { label: "Email Us", value: "sudopc@gmail.com", action: () => Linking.openURL("mailto:sudopc@gmail.com") },
             { label: "Report a Bug", value: "Let us know what's broken", action: () => setShowFeedback(true) },
           ].map(item => (
             <TouchableOpacity key={item.label} style={s.contactRow} onPress={item.action}>
@@ -132,7 +169,7 @@ export default function AccountScreen() {
                 <TouchableOpacity style={s.submitBtn} onPress={handleFeedback}>
                   <Text style={s.submitBtnText}>Send Feedback →</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={s.emailAltBtn} onPress={() => Linking.openURL(`mailto:support@tigerdenfinderapp.com?subject=Tiger Den Feedback&body=${encodeURIComponent(feedbackText)}`)}>
+                <TouchableOpacity style={s.emailAltBtn} onPress={() => Linking.openURL(`mailto:sudopc@gmail.com?subject=Tiger Den Feedback&body=${encodeURIComponent(feedbackText)}`)}>
                   <Text style={s.emailAltText}>Or send via email →</Text>
                 </TouchableOpacity>
               </>
@@ -167,6 +204,10 @@ const s = StyleSheet.create({
   featureDesc: { color: MUTED, fontSize: 11, lineHeight: 16 },
   comingSoonBadge: { backgroundColor: "rgba(253,216,53,0.1)", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, borderColor: "rgba(253,216,53,0.2)" },
   comingSoonText: { color: GOLD, fontSize: 9, fontWeight: "800" },
+  badge: { backgroundColor: "rgba(74,222,128,0.15)", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4, borderWidth: 1, borderColor: "rgba(74,222,128,0.3)" },
+  badgeSuccess: { backgroundColor: "rgba(74,222,128,0.25)" },
+  badgeText: { color: "#4ADE80", fontSize: 10, fontWeight: "800" },
+  badgeTextSuccess: { color: "#4ADE80" },
 
   feedbackBtn: { backgroundColor: "rgba(253,216,53,0.1)", borderRadius: 12, padding: 14, alignItems: "center", borderWidth: 1, borderColor: "rgba(253,216,53,0.25)" },
   feedbackBtnText: { color: GOLD, fontWeight: "700", fontSize: 14 },

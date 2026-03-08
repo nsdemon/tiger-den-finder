@@ -3,6 +3,40 @@ import { createContext, useContext, useState, useEffect, useCallback, ReactNode 
 
 const RENTCAST_API_KEY = process.env.EXPO_PUBLIC_RENTCAST_API_KEY || "";
 
+/**
+ * Listing IDs that have local photos in public/listings/ (e.g. from Image Downloader Pro).
+ * See public/listings/README.md for how to pull photos from apartments.com.
+ */
+
+/** Preferred: map listing id → exact filenames (keep descriptive names like acadian-place-apartments-baton-rouge-la-building-photo.jpg). */
+const LOCAL_LISTING_PHOTO_FILES: Record<string, string[]> = {};
+
+/** Fallback: list of ids that use the f1.jpg, f1-1.jpg naming convention. */
+const LOCAL_LISTING_PHOTO_IDS: string[] = [];
+
+/** For f1/f2 convention only: id → number of photos (f1.jpg, f1-1.jpg, ...). Omit or 1 = single photo. */
+const LOCAL_LISTING_PHOTO_COUNTS: Record<string, number> = {};
+
+function getListingPhoto(listingId: string, defaultPhoto: string): string {
+  return getListingPhotos(listingId, defaultPhoto)[0];
+}
+
+function getListingPhotos(listingId: string, defaultPhoto: string): string[] {
+  const customFiles = LOCAL_LISTING_PHOTO_FILES[listingId];
+  if (customFiles && customFiles.length > 0) {
+    return customFiles.map((f) => `/listings/${encodeURIComponent(f)}`);
+  }
+  if (!LOCAL_LISTING_PHOTO_IDS.includes(listingId)) {
+    return [defaultPhoto];
+  }
+  const count = LOCAL_LISTING_PHOTO_COUNTS[listingId] ?? 1;
+  const urls: string[] = [];
+  for (let i = 0; i < count; i++) {
+    urls.push(i === 0 ? `/listings/${listingId}.jpg` : `/listings/${listingId}-${i}.jpg`);
+  }
+  return urls;
+}
+
 const PHOTOS = [
   "https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=700&q=80",
   "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=700&q=80",
@@ -35,6 +69,10 @@ function hashStr(str: string): number {
 
 export function transformListing(item: any, index: number) {
   const fallbackPhoto = PHOTOS[hashStr(item.formattedAddress || String(index)) % PHOTOS.length];
+  const rawPhotos = (item.photoUrls && Array.isArray(item.photoUrls))
+    ? item.photoUrls.filter((u: string) => typeof u === "string" && u.startsWith("http"))
+    : [];
+  const photos = rawPhotos.length > 0 ? rawPhotos : [fallbackPhoto];
   return {
     id: item.id || String(index),
     name: item.formattedAddress || `Property ${index + 1}`,
@@ -52,7 +90,8 @@ export function transformListing(item: any, index: number) {
     color: "#2D0B6B",
     verified: !!item.listedDate,
     available: item.status === "Active",
-    photo: (item.photoUrls && item.photoUrls.length > 0 && item.photoUrls[0].startsWith("http")) ? item.photoUrls[0] : fallbackPhoto,
+    photo: photos[0],
+    photos,
     tags: [item.propertyType || "Rental", item.bedrooms === 0 ? "Studio" : `${item.bedrooms} Bed`, item.daysOnMarket < 7 ? "New Listing" : "Available"].filter(Boolean),
     amenities: item.features || ["Contact for details"],
     contact: { name: item.listedByName || "Property Manager", phone: item.listedByPhone || "Contact via app", email: item.listedByEmail || "Contact via app", hours: "Contact for hours" },
@@ -62,7 +101,7 @@ export function transformListing(item: any, index: number) {
   };
 }
 
-const FALLBACK_LISTINGS = [
+const FALLBACK_LISTINGS_RAW = [
   { id: "f1", name: "The Ogden on Highland", type: "Apartment", address: "4120 Highland Rd, Baton Rouge, LA 70808", distance: "0.3 mi from LSU", lat: 30.4086, lng: -91.1737, price: 850, beds: 1, baths: 1, sqft: 650, rating: 4.6, reviews: 84, color: "#2D0B6B", verified: true, available: true, photo: PHOTOS[0], tags: ["Apartment", "1 Bed", "Available"], amenities: ["Pool", "Gym", "Pet Friendly"], contact: { name: "Property Manager", phone: "Contact via app", email: "Contact via app", hours: "9am-5pm" }, nearbyFood: [], studentReviews: [], description: "Modern apartment near LSU." },
   { id: "f2", name: "Nicholson Gateway", type: "Apartment", address: "3715 Nicholson Dr, Baton Rouge, LA 70802", distance: "On Campus", lat: 30.4076, lng: -91.1744, price: 1120, beds: 2, baths: 2, sqft: 900, rating: 4.8, reviews: 120, color: "#2D0B6B", verified: true, available: true, photo: PHOTOS[1], tags: ["Apartment", "2 Bed", "New Listing"], amenities: ["Study Rooms", "Furnished", "On Campus"], contact: { name: "Property Manager", phone: "Contact via app", email: "Contact via app", hours: "9am-5pm" }, nearbyFood: [], studentReviews: [], description: "On-campus housing near Tiger Stadium." },
   { id: "f3", name: "Stadium View Lofts", type: "Condo", address: "111 Stadium Dr, Baton Rouge, LA 70803", distance: "0.1 mi from LSU", lat: 30.4122, lng: -91.1838, price: 1350, beds: 2, baths: 2, sqft: 1100, rating: 4.7, reviews: 56, color: "#2D0B6B", verified: true, available: false, photo: PHOTOS[2], tags: ["Condo", "2 Bed", "Available"], amenities: ["Views", "New Build", "Premium"], contact: { name: "Property Manager", phone: "Contact via app", email: "Contact via app", hours: "9am-5pm" }, nearbyFood: [], studentReviews: [], description: "Premium condo with stadium views." },
@@ -80,6 +119,15 @@ const FALLBACK_LISTINGS = [
   { id: "f15", name: "The Chimes Street Lofts", type: "Condo", address: "3357 Chimes St, Baton Rouge, LA 70802", distance: "0.4 mi from LSU", lat: 30.4095, lng: -91.1698, price: 1200, beds: 1, baths: 1, sqft: 750, rating: 4.7, reviews: 33, color: "#2D0B6B", verified: true, available: false, photo: PHOTOS[4], tags: ["Condo", "1 Bed", "Waitlist"], amenities: ["Renovated", "Hardwood Floors", "Walk to Tigerland"], contact: { name: "Property Manager", phone: "Contact via app", email: "Contact via app", hours: "9am-5pm" }, nearbyFood: [], studentReviews: [], description: "Trendy lofts steps from Tigerland nightlife." },
   { id: "f16", name: "Steele Blvd Suites", type: "Apartment", address: "6566 Steele Blvd, Baton Rouge, LA 70806", distance: "2.8 mi from LSU", lat: 30.4230, lng: -91.1430, price: 695, beds: 1, baths: 1, sqft: 560, rating: 4.1, reviews: 17, color: "#2D0B6B", verified: false, available: true, photo: PHOTOS[5], tags: ["Apartment", "1 Bed", "Available"], amenities: ["Budget-Friendly", "Near I-10"], contact: { name: "Property Manager", phone: "Contact via app", email: "Contact via app", hours: "9am-5pm" }, nearbyFood: [], studentReviews: [], description: "Budget option with easy highway access." },
 ];
+
+const FALLBACK_LISTINGS = FALLBACK_LISTINGS_RAW.map((l) => {
+  const photos = getListingPhotos(l.id, l.photo);
+  return {
+    ...l,
+    photo: photos[0],
+    photos,
+  };
+});
 
 export type Listing = typeof FALLBACK_LISTINGS[0];
 
