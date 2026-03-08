@@ -90,7 +90,11 @@ export default function TigerDenFinder() {
     if (sortBy === "price_asc") return a.price - b.price;
     if (sortBy === "price_desc") return b.price - a.price;
     if (sortBy === "type") return (a.type || "").localeCompare(b.type || "");
-    if (sortBy === "distance") return parseFloat(a.distance) - parseFloat(b.distance);
+    if (sortBy === "distance") {
+      const milesA = (a.distance || "").toLowerCase().includes("on campus") ? 0 : parseFloat(a.distance) || 999;
+      const milesB = (b.distance || "").toLowerCase().includes("on campus") ? 0 : parseFloat(b.distance) || 999;
+      return milesA - milesB;
+    }
     if (sortBy === "rating") return b.rating - a.rating;
     return 0;
   });
@@ -703,9 +707,11 @@ export default function TigerDenFinder() {
             <Text style={s.pawSectionLabel}>Sort by</Text>
             {[
               ["default", "Default"],
+              ["distance", "📍 Distance (nearest first)"],
               ["price_asc", "💰 Price: Low → High"],
               ["price_desc", "💰 Price: High → Low"],
               ["type", "🏠 Type (A–Z)"],
+              ["rating", "★ Rating (highest first)"],
             ].map(([val, label]) => (
               <TouchableOpacity
                 key={val}

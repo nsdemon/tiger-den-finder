@@ -42,6 +42,19 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
+## Push updates (Git → GitHub → Vercel)
+
+After making changes, commit and push so Vercel can redeploy:
+
+```bash
+git add .
+git status
+git commit -m "Your short description of the change"
+git push origin main
+```
+
+(Use `master` instead of `main` if that’s your default branch. Use a clear message, e.g. `Add sort by distance` or `Fix listing photos`.)
+
 ## Build & deploy (web)
 
 1. **Build** the static site (includes `public/` and your listing photos):
