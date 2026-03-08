@@ -73,7 +73,6 @@ export default function TigerDenFinder() {
   const [sortBy, setSortBy] = useState("default");
   const [showTesterMenu, setShowTesterMenu] = useState(false);
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  const [showHeaderMenu, setShowHeaderMenu] = useState(false);
   const [modalPhotoIndex, setModalPhotoIndex] = useState(0);
 
   const filtered = listings.filter((l) => {
@@ -131,53 +130,25 @@ export default function TigerDenFinder() {
           </View>
         </View>
         <View style={s.headerRight}>
+          <TouchableOpacity style={s.menuBtn} onPress={() => setShowAlerts(true)}>
+            <Text style={s.menuBtnText}>🔔</Text>
+            {alerts.length > 0 && <View style={s.menuDot} />}
+          </TouchableOpacity>
+          <TouchableOpacity style={[s.menuBtn, wishlist.length > 0 && s.wishlistBtnActive]} onPress={() => setShowWishlist(true)}>
+            <Text style={[s.menuBtnText, wishlist.length > 0 && s.wishlistBtnTextActive]}>{wishlist.length > 0 ? "♥" : "♡"}</Text>
+            {wishlist.length > 0 && <View style={s.menuDot} />}
+          </TouchableOpacity>
           <TouchableOpacity
             style={s.menuBtn}
-            onPress={() => setShowHeaderMenu(true)}
+            onPress={() => setShowFilterMenu(true)}
           >
             <Text style={s.menuBtnText}>⋯</Text>
-            {(alerts.length > 0 || wishlist.length > 0 || typeFilter !== "All" || sortBy !== "default") && (
+            {(typeFilter !== "All" || sortBy !== "default") && (
               <View style={s.menuDot} />
             )}
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* HEADER MENU (Alerts, Filter, Favorites) */}
-      <Modal visible={showHeaderMenu} transparent animationType="fade" onRequestClose={() => setShowHeaderMenu(false)}>
-        <TouchableOpacity style={s.pawOverlay} activeOpacity={1} onPress={() => setShowHeaderMenu(false)}>
-          <View style={s.headerMenuBox}>
-            <Text style={s.headerMenuTitle}>Listings</Text>
-            <TouchableOpacity
-              style={s.headerMenuItem}
-              onPress={() => { setShowHeaderMenu(false); setShowFilterMenu(true); }}
-            >
-              <Text style={s.headerMenuEmoji}>🐾</Text>
-              <Text style={s.headerMenuLabel}>Filter & Sort</Text>
-              {(typeFilter !== "All" || sortBy !== "default") && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>1</Text></View>}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={s.headerMenuItem}
-              onPress={() => { setShowHeaderMenu(false); setShowAlerts(true); }}
-            >
-              <Text style={s.headerMenuEmoji}>🔔</Text>
-              <Text style={s.headerMenuLabel}>Listing Alerts</Text>
-              {alerts.length > 0 && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>{alerts.length}</Text></View>}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={s.headerMenuItem}
-              onPress={() => { setShowHeaderMenu(false); setShowWishlist(true); }}
-            >
-              <Text style={s.headerMenuEmoji}>♥</Text>
-              <Text style={s.headerMenuLabel}>Favorites</Text>
-              {wishlist.length > 0 && <View style={s.headerMenuBadge}><Text style={s.headerMenuBadgeText}>{wishlist.length}</Text></View>}
-            </TouchableOpacity>
-            <TouchableOpacity style={s.headerMenuClose} onPress={() => setShowHeaderMenu(false)}>
-              <Text style={s.headerMenuCloseText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </Modal>
 
       {/* LIVE DATA BANNER */}
       {usingLiveData && (
