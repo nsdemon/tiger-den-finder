@@ -5,12 +5,25 @@ import {
   StyleSheet, Dimensions, Platform, ActivityIndicator, RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { useListings } from "@/context/ListingsContext";
 import { useSearch } from "@/context/SearchContext";
 import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+// Louisiana State Capitol, Baton Rouge
+const STATE_CAPITOL_LAT = 30.4570;
+const STATE_CAPITOL_LNG = -91.1874;
+
+function milesFromCapitol(lat: number, lng: number): number {
+  const R = 3959; // earth radius miles
+  const dLat = ((lat - STATE_CAPITOL_LAT) * Math.PI) / 180;
+  const dLng = ((lng - STATE_CAPITOL_LNG) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos((STATE_CAPITOL_LAT * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 function getListingPhotos(item: { photo?: string; photos?: string[] }): string[] {
   if (item.photos && Array.isArray(item.photos) && item.photos.length > 0) return item.photos;
@@ -19,12 +32,6 @@ function getListingPhotos(item: { photo?: string; photos?: string[] }): string[]
 const TYPE_FILTERS = ["All", "Apartment", "Condo", "Single Family", "Townhouse"];
 const TABS = ["Overview", "Price History", "Amenities", "Food", "Reviews", "Message", "Contact"];
 const PRO_TABS: string[] = []; // Everything free for now
-
-const HOME_OPTIONS = [
-  { id: "listings", label: "🏠 Listings", desc: "Apartments & rentals near LSU" },
-  { id: "events", label: "🎉 Events", desc: "Campus & Baton Rouge events" },
-  { id: "map", label: "📍 Map", desc: "See everything on the map" },
-] as const;
 
 // Generate fake price history based on current price
 function generatePriceHistory(currentPrice: number) {
@@ -38,7 +45,6 @@ function generatePriceHistory(currentPrice: number) {
 }
 
 export default function TigerDenFinder() {
-  const router = useRouter();
   const { searchQuery: search } = useSearch();
   const [typeFilter, setTypeFilter] = useState("All");
   const [selected, setSelected] = useState<any>(null);
@@ -98,8 +104,8 @@ export default function TigerDenFinder() {
     if (sortBy === "price_desc") return b.price - a.price;
     if (sortBy === "type") return (a.type || "").localeCompare(b.type || "");
     if (sortBy === "distance") {
-      const milesA = (a.distance || "").toLowerCase().includes("on campus") ? 0 : parseFloat(a.distance) || 999;
-      const milesB = (b.distance || "").toLowerCase().includes("on campus") ? 0 : parseFloat(b.distance) || 999;
+      const milesA = milesFromCapitol(a.lat ?? 0, a.lng ?? 0);
+      const milesB = milesFromCapitol(b.lat ?? 0, b.lng ?? 0);
       return milesA - milesB;
     }
     if (sortBy === "rating") return b.rating - a.rating;
@@ -138,20 +144,12 @@ export default function TigerDenFinder() {
           </View>
         </View>
         <View style={s.headerRight}>
-          <TouchableOpacity style={s.menuBtn} onPress={() => setShowAlerts(true)}>
-            <Text style={s.menuBtnText}>🔔</Text>
-            {alerts.length > 0 && <View style={s.menuDot} />}
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.menuBtn, wishlist.length > 0 && s.wishlistBtnActive]} onPress={() => setShowWishlist(true)}>
-            <Text style={[s.menuBtnText, wishlist.length > 0 && s.wishlistBtnTextActive]}>{wishlist.length > 0 ? "♥" : "♡"}</Text>
-            {wishlist.length > 0 && <View style={s.menuDot} />}
-          </TouchableOpacity>
           <TouchableOpacity
             style={s.menuBtn}
             onPress={() => setShowFilterMenu(true)}
           >
             <Text style={s.menuBtnText}>⋯</Text>
-            {(typeFilter !== "All" || sortBy !== "default") && (
+            {(typeFilter !== "All" || sortBy !== "default" || alerts.length > 0 || wishlist.length > 0) && (
               <View style={s.menuDot} />
             )}
           </TouchableOpacity>
@@ -171,27 +169,6 @@ export default function TigerDenFinder() {
           <Text style={s.errorBannerText}>⚠️ {apiError}</Text>
         </View>
       )}
-
-      {/* TIGER DEN FINDER — What do you want to see? (no Baton Rouge popup) */}
-      <View style={s.homeSection}>
-        <Text style={s.homeSectionTitle}>What do you want to see?</Text>
-        <View style={s.homeOptionsRow}>
-          {HOME_OPTIONS.map((opt) => (
-            <TouchableOpacity
-              key={opt.id}
-              style={s.homeOptionCard}
-              onPress={() => {
-                if (opt.id === "listings") return;
-                if (opt.id === "events") router.push("/(tabs)/explore");
-                if (opt.id === "map") router.push("/(tabs)/map");
-              }}
-            >
-              <Text style={s.homeOptionLabel}>{opt.label}</Text>
-              <Text style={s.homeOptionDesc}>{opt.desc}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
 
       {/* LOADING STATE */}
       {apiLoading ? (
@@ -687,6 +664,20 @@ export default function TigerDenFinder() {
                 <Text style={s.pawDropdownClose}>✕</Text>
               </TouchableOpacity>
             </View>
+            <TouchableOpacity
+              style={s.pawOption}
+              onPress={() => { setShowFilterMenu(false); setShowAlerts(true); }}
+            >
+              <Text style={s.pawOptionText}>🔔 Listing Alerts</Text>
+              {alerts.length > 0 && <View style={s.pawBadge}><Text style={s.pawBadgeText}>{alerts.length}</Text></View>}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.pawOption}
+              onPress={() => { setShowFilterMenu(false); setShowWishlist(true); }}
+            >
+              <Text style={s.pawOptionText}>{wishlist.length > 0 ? "♥" : "♡"} Favorites</Text>
+              {wishlist.length > 0 && <View style={s.pawBadge}><Text style={s.pawBadgeText}>{wishlist.length}</Text></View>}
+            </TouchableOpacity>
             <Text style={s.pawSectionLabel}>Filter by type</Text>
             {TYPE_FILTERS.map((t) => (
               <TouchableOpacity
@@ -707,7 +698,7 @@ export default function TigerDenFinder() {
             <Text style={s.pawSectionLabel}>Sort by</Text>
             {[
               ["default", "Default"],
-              ["distance", "📍 Distance (nearest first)"],
+              ["distance", "📍 Distance from State Capitol (nearest first)"],
               ["price_asc", "💰 Price: Low → High"],
               ["price_desc", "💰 Price: High → Low"],
               ["type", "🏠 Type (A–Z)"],
@@ -797,14 +788,6 @@ const s = StyleSheet.create({
   searchWrap: { flexDirection: "row", alignItems: "center", backgroundColor: PURPLE_MED, margin: 12, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(253,216,53,0.3)" },
   searchIcon: { fontSize: 16, marginRight: 8 },
   searchInput: { flex: 1, color: TEXT, paddingVertical: 12, fontSize: Platform.OS === "web" ? 16 : 14 },
-
-  // HOME — What do you want to see?
-  homeSection: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4 },
-  homeSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD, marginBottom: 10 },
-  homeOptionsRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
-  homeOptionCard: { flex: 1, minWidth: 100, backgroundColor: PURPLE_MED, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(253,216,53,0.25)" },
-  homeOptionLabel: { fontSize: 14, fontWeight: "800", color: GOLD, marginBottom: 2 },
-  homeOptionDesc: { fontSize: 11, color: MUTED },
 
   // FILTERS
   filterRow: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
@@ -1044,8 +1027,8 @@ const s = StyleSheet.create({
   pawDot: { position: "absolute", top: 2, right: 2, width: 8, height: 8, borderRadius: 4, backgroundColor: GOLD, borderWidth: 1.5, borderColor: PURPLE_LIGHT },
 
   // TIGER PAW DROPDOWN
-  pawOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-start", alignItems: "flex-end", paddingTop: 100, paddingRight: 16 },
-  pawDropdown: { backgroundColor: "#1A0F2E", borderRadius: 18, width: 240, borderWidth: 1.5, borderColor: "rgba(253,216,53,0.3)", overflow: "hidden" },
+  pawOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "flex-start", alignItems: "flex-end", paddingTop: Platform.OS === "web" ? 56 : 48, paddingRight: 12 },
+  pawDropdown: { backgroundColor: "#1A0F2E", borderRadius: 18, width: 260, maxWidth: "90%", borderWidth: 1.5, borderColor: "rgba(253,216,53,0.3)", overflow: "hidden" },
   pawDropdownHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: "rgba(253,216,53,0.15)", backgroundColor: PURPLE_LIGHT },
   pawDropdownEmoji: { fontSize: 18 },
   pawDropdownTitle: { flex: 1, color: GOLD, fontWeight: "800", fontSize: 14 },
@@ -1062,6 +1045,8 @@ const s = StyleSheet.create({
   headerMenuCloseText: { color: MUTED, fontSize: 15 },
   pawOption: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 13, borderBottomWidth: 1, borderBottomColor: "rgba(255,255,255,0.05)" },
   pawOptionActive: { backgroundColor: "rgba(253,216,53,0.08)" },
+  pawBadge: { backgroundColor: GOLD, borderRadius: 10, minWidth: 20, height: 20, alignItems: "center", justifyContent: "center", paddingHorizontal: 6 },
+  pawBadgeText: { color: PURPLE_DARK, fontSize: 12, fontWeight: "800" },
   pawOptionText: { color: TEXT, fontSize: 14, fontWeight: "500" },
   pawOptionTextActive: { color: GOLD, fontWeight: "700" },
   pawCheckmark: { color: GOLD, fontSize: 14, fontWeight: "800" },
