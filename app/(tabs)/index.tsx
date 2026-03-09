@@ -11,17 +11,17 @@ import { MIN_TOUCH_TARGET } from "@/constants/theme";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-// Louisiana State Capitol, Baton Rouge
-const STATE_CAPITOL_LAT = 30.4570;
-const STATE_CAPITOL_LNG = -91.1874;
+// LSU campus center (grid center)
+const LSU_LAT = 30.4133;
+const LSU_LNG = -91.1800;
 
-function milesFromCapitol(lat: number, lng: number): number {
+function milesFromLSU(lat: number, lng: number): number {
   const R = 3959; // earth radius miles
-  const dLat = ((lat - STATE_CAPITOL_LAT) * Math.PI) / 180;
-  const dLng = ((lng - STATE_CAPITOL_LNG) * Math.PI) / 180;
+  const dLat = ((lat - LSU_LAT) * Math.PI) / 180;
+  const dLng = ((lng - LSU_LNG) * Math.PI) / 180;
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos((STATE_CAPITOL_LAT * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
+    Math.cos((LSU_LAT * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
@@ -104,8 +104,8 @@ export default function TigerDenFinder() {
     if (sortBy === "price_desc") return b.price - a.price;
     if (sortBy === "type") return (a.type || "").localeCompare(b.type || "");
     if (sortBy === "distance") {
-      const milesA = milesFromCapitol(a.lat ?? 0, a.lng ?? 0);
-      const milesB = milesFromCapitol(b.lat ?? 0, b.lng ?? 0);
+      const milesA = milesFromLSU(a.lat ?? 0, a.lng ?? 0);
+      const milesB = milesFromLSU(b.lat ?? 0, b.lng ?? 0);
       return milesA - milesB;
     }
     if (sortBy === "rating") return b.rating - a.rating;
@@ -698,7 +698,7 @@ export default function TigerDenFinder() {
             <Text style={s.pawSectionLabel}>Sort by</Text>
             {[
               ["default", "Default"],
-              ["distance", "📍 Distance from State Capitol (nearest first)"],
+              ["distance", "📍 Distance from LSU (nearest first)"],
               ["price_asc", "💰 Price: Low → High"],
               ["price_desc", "💰 Price: High → Low"],
               ["type", "🏠 Type (A–Z)"],
