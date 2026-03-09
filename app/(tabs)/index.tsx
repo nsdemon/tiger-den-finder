@@ -5,6 +5,7 @@ import {
   StyleSheet, Dimensions, Platform, ActivityIndicator, RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
 import { useListings } from "@/context/ListingsContext";
 import { useSearch } from "@/context/SearchContext";
 import { MIN_TOUCH_TARGET } from "@/constants/theme";
@@ -19,6 +20,12 @@ const TYPE_FILTERS = ["All", "Apartment", "Condo", "Single Family", "Townhouse"]
 const TABS = ["Overview", "Price History", "Amenities", "Food", "Reviews", "Message", "Contact"];
 const PRO_TABS: string[] = []; // Everything free for now
 
+const HOME_OPTIONS = [
+  { id: "listings", label: "🏠 Listings", desc: "Apartments & rentals near LSU" },
+  { id: "events", label: "🎉 Events", desc: "Campus & Baton Rouge events" },
+  { id: "map", label: "📍 Map", desc: "See everything on the map" },
+] as const;
+
 // Generate fake price history based on current price
 function generatePriceHistory(currentPrice: number) {
   const months = ["Sep '23","Oct '23","Nov '23","Dec '23","Jan '24","Feb '24","Mar '24","Apr '24","May '24","Jun '24","Jul '24","Aug '24","Sep '24","Oct '24","Nov '24","Dec '24","Jan '25","Feb '25","Mar '25"];
@@ -31,6 +38,7 @@ function generatePriceHistory(currentPrice: number) {
 }
 
 export default function TigerDenFinder() {
+  const router = useRouter();
   const { searchQuery: search } = useSearch();
   const [typeFilter, setTypeFilter] = useState("All");
   const [selected, setSelected] = useState<any>(null);
@@ -163,6 +171,27 @@ export default function TigerDenFinder() {
           <Text style={s.errorBannerText}>⚠️ {apiError}</Text>
         </View>
       )}
+
+      {/* TIGER DEN FINDER — What do you want to see? (no Baton Rouge popup) */}
+      <View style={s.homeSection}>
+        <Text style={s.homeSectionTitle}>What do you want to see?</Text>
+        <View style={s.homeOptionsRow}>
+          {HOME_OPTIONS.map((opt) => (
+            <TouchableOpacity
+              key={opt.id}
+              style={s.homeOptionCard}
+              onPress={() => {
+                if (opt.id === "listings") return;
+                if (opt.id === "events") router.push("/(tabs)/explore");
+                if (opt.id === "map") router.push("/(tabs)/map");
+              }}
+            >
+              <Text style={s.homeOptionLabel}>{opt.label}</Text>
+              <Text style={s.homeOptionDesc}>{opt.desc}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
       {/* LOADING STATE */}
       {apiLoading ? (
@@ -768,6 +797,14 @@ const s = StyleSheet.create({
   searchWrap: { flexDirection: "row", alignItems: "center", backgroundColor: PURPLE_MED, margin: 12, borderRadius: 12, paddingHorizontal: 14, borderWidth: 1, borderColor: "rgba(253,216,53,0.3)" },
   searchIcon: { fontSize: 16, marginRight: 8 },
   searchInput: { flex: 1, color: TEXT, paddingVertical: 12, fontSize: Platform.OS === "web" ? 16 : 14 },
+
+  // HOME — What do you want to see?
+  homeSection: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 4 },
+  homeSectionTitle: { fontSize: 15, fontWeight: "700", color: GOLD, marginBottom: 10 },
+  homeOptionsRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
+  homeOptionCard: { flex: 1, minWidth: 100, backgroundColor: PURPLE_MED, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: "rgba(253,216,53,0.25)" },
+  homeOptionLabel: { fontSize: 14, fontWeight: "800", color: GOLD, marginBottom: 2 },
+  homeOptionDesc: { fontSize: 11, color: MUTED },
 
   // FILTERS
   filterRow: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 14, paddingVertical: 10, gap: 8 },
